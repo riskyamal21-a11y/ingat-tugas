@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IngatTugas - Asisten Pencatat Tugas dari Foto</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Tesseract.js CDN (OCR Engine) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">📝</div>
+        <div>
+          <h1>IngatTugas</h1>
+          <p class="subtitle">Ekstraksi tugas otomatis dari foto & sinkronisasi Google Calendar</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Notification Banner -->
+    <div id="notificationBanner" class="notification-banner hidden"></div>
+
+    <!-- Main Grid -->
+    <main class="main-grid">
+      <!-- Section 1: Upload & OCR -->
+      <section class="card upload-card">
+        <h2 class="card-title">
+          <span class="step-badge">1</span> Unggah Foto Tugas
+        </h2>
+        <p class="card-desc">Ambil foto pengumuman tugas, papan tulis, atau catatan tugas Anda.</p>
+
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="imageInput" accept="image/*" class="file-input">
+          <div class="dropzone-content" id="dropzonePrompt">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p><strong>Klik untuk memilih foto</strong> atau seret gambar ke sini</p>
+            <span class="file-hint">Mendukung format JPG, PNG, WEBP</span>
+          </div>
+
+          <!-- Image Preview -->
+          <div class="image-preview-wrapper hidden" id="previewWrapper">
+            <img id="imagePreview" alt="Pratinjau Foto Tugas">
+            <button type="button" class="btn-change-image" id="btnChangeImage" title="Ganti Gambar">✕ Ganti</button>
+          </div>
+        </div>
+
+        <!-- OCR Action & Progress -->
+        <div class="ocr-controls">
+          <button type="button" id="btnProcessImage" class="btn btn-primary" disabled>
+            <span class="btn-icon">⚡</span> Proses Gambar
+          </button>
+        </div>
+
+        <div class="progress-container hidden" id="progressContainer">
+          <div class="progress-info">
+            <span id="progressStatus">Mempersiapkan OCR...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Form Hasil Ekstraksi -->
+      <section class="card form-card">
+        <h2 class="card-title">
+          <span class="step-badge">2</span> Hasil Ekstraksi Tugas
+        </h2>
+        <p class="card-desc">Periksa dan sesuaikan data tugas sebelum disimpan atau diekspor.</p>
+
+        <form id="taskForm" class="task-form" onsubmit="return false;">
+          <div class="form-group">
+            <label for="taskTitle">Judul Tugas <span class="required">*</span></label>
+            <input type="text" id="taskTitle" name="taskTitle" placeholder="Contoh: Tugas Matematika Bab 3" required>
+          </div>
+
+          <div class="form-group">
+            <label for="taskDeadline">Tanggal & Jam Deadline <span class="required">*</span></label>
+            <input type="datetime-local" id="taskDeadline" name="taskDeadline" required>
+          </div>
+
+          <div class="form-group">
+            <label for="taskNotes">Catatan / Detail Tambahan</label>
+            <textarea id="taskNotes" name="taskNotes" rows="5" placeholder="Detail tugas, tautan pengumpulan, atau teks hasil OCR..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="btnSaveTask" class="btn btn-success">
+              <span class="btn-icon">💾</span> Simpan ke Database
+            </button>
+            <a id="btnAddToCalendar" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-calendar">
+              <span class="btn-icon">📅</span> Tambah ke Google Calendar
+            </a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Section 3: Daftar Tugas Tersimpan -->
+    <section class="card tasks-list-card">
+      <div class="tasks-header">
+        <div>
+          <h2 class="card-title" style="margin-bottom: 4px;">Daftar Tugas Tersimpan</h2>
+          <p class="card-desc" id="tasksSummary">Memuat daftar tugas...</p>
+        </div>
+        <button type="button" id="btnRefreshTasks" class="btn btn-outline" title="Segarkan Data">
+          🔄 Segarkan
+        </button>
+      </div>
+
+      <!-- Task Items Container -->
+      <div id="tasksList" class="tasks-list">
+        <!-- Diisi secara dinamis oleh JavaScript -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>IngatTugas &bull; Dibuat dengan HTML, CSS, JavaScript Vanilla murni & Tesseract.js</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
